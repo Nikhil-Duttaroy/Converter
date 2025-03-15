@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { extensions } from "@/lib/constants";
 import { ExtendedFile } from "@/lib/types";
 import { Badge } from "./ui/badge";
-import { Loader } from "lucide-react";
+import { Download, Loader2, OctagonAlert } from "lucide-react";
 
 type Props = {
   index: number;
@@ -64,12 +64,18 @@ const FileCard = ({
         <CardAction>
           {file.isConverting ? (
             <Badge variant="default">
-              Converting <Loader size="sm" />
+              <Loader2 className="animate-spin" />
+              Converting
             </Badge>
           ) : file.isConverted ? (
-            <Button onClick={() => downloadFile(file)}>Download</Button>
+            <Button onClick={() => downloadFile(file)}>
+              <Download /> Download
+            </Button>
           ) : file.isErrored ? (
-            <Badge variant="destructive">Error in Converting File</Badge>
+            <Badge variant="destructive">
+              <OctagonAlert />
+              Error in Converting File
+            </Badge>
           ) : (
             <Select
               value={file.to}

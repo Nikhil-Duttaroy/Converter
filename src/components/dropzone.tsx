@@ -7,17 +7,25 @@ import { ExtendedFile } from "@/lib/types";
 import { convertFile, loadFfmpeg } from "@/lib/ffmpeg";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { accepted_files } from "@/lib/constants";
+import { Download } from "lucide-react";
 
 const Dropzone = ({}) => {
   //States
   const [files, setFiles] = useState<ExtendedFile[]>([]);
   const [isHovering, setIsHovering] = useState<boolean>(false);
   const [isFFMPEGLoaded, setIsFFMPEGLoaded] = useState<boolean>(false);
-  const [isConersionCompleted, setIsConversionCompleted] =
+  const [isConversionCompleted, setIsConversionCompleted] =
     useState<boolean>(false);
   const ffmpegRef = useRef(new FFmpeg());
 
   //Functions
+  const reset = () => {
+    setFiles([]);
+    setIsHovering(false);
+    setIsFFMPEGLoaded(false);
+    setIsConversionCompleted(false);
+  };
+
   const handleUpload = (files: ExtendedFile[]) => {
     const filesWithMetadata = files.map((file) => ({
       fileData: file,
@@ -82,7 +90,8 @@ const Dropzone = ({}) => {
             : elt
         );
         setIsConversionCompleted(true);
-      } catch {
+      } catch (err) {
+        console.error("🚀 ~ err:", err);
         tmpFiles = tmpFiles.map((elt) =>
           elt === file
             ? {
@@ -139,7 +148,7 @@ const Dropzone = ({}) => {
             />
           ))}
         </div>
-        {isFFMPEGLoaded && !isConersionCompleted && (
+        {isFFMPEGLoaded && !isConversionCompleted && (
           <Button
             disabled={!isFFMPEGLoaded}
             variant="default"
@@ -148,10 +157,15 @@ const Dropzone = ({}) => {
             Convert Files
           </Button>
         )}
-        {isConersionCompleted && files.length > 1 && (
-          <Button variant={"default"} onClick={() => handleDownloadAll()}>
-            Download All
-          </Button>
+        {isConversionCompleted && files.length > 1 && (
+          <div className="flex gap-4">
+            <Button variant="default" onClick={() => handleDownloadAll()}>
+              <Download /> Download All
+            </Button>
+            <Button variant="secondary" onClick={() => reset()}>
+              Convert More Files
+            </Button>
+          </div>
         )}
       </div>
     );
