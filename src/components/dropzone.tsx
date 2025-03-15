@@ -1,23 +1,26 @@
 "use client";
 import ReactDropzone from "react-dropzone";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FileCard from "./fileCard";
 import { ExtendedFile } from "@/lib/types";
+import { convertFile, loadFfmpeg } from "@/lib/ffmpeg";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { accepted_files } from "@/lib/constants";
 
 const Dropzone = ({}) => {
   //States
   const [files, setFiles] = useState<ExtendedFile[]>([]);
   const [isHovering, setIsHovering] = useState<boolean>(false);
-  const accepted_files = {
-    "audio/*": [],
-    "video/*": [],
-    "image/*": [],
-  };
+  const [isFFMPEGLoaded, setIsFFMPEGLoaded] = useState<boolean>(false);
+  const [isConersionCompleted, setIsConversionCompleted] =
+    useState<boolean>(false);
+  const ffmpegRef = useRef(new FFmpeg());
 
   //Functions
   const handleUpload = (files: ExtendedFile[]) => {
     const filesWithMetadata = files.map((file) => ({
+      fileData: file,
       name: file.name, // Manually assign properties
       size: file.size,
       type: file.type,
@@ -33,8 +36,6 @@ const Dropzone = ({}) => {
       output: null,
     })) as ExtendedFile[];
 
-    console.log("🚀 ~ files:", files);
-    console.log("🚀 ~ filesWithMetadata:", filesWithMetadata);
     setFiles(filesWithMetadata);
   };
 
@@ -52,6 +53,75 @@ const Dropzone = ({}) => {
     setFiles(newFiles);
   };
 
+  const load = async () => {
+    const ffmpeg_response: FFmpeg = await loadFfmpeg();
+    ffmpegRef.current = ffmpeg_response;
+    setIsFFMPEGLoaded(true);
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  const handleFileConversion = async () => {
+    let tmpFiles = files.map((elt) => ({
+      ...elt,
+      isConverting: true,
+    }));
+    for (const file of tmpFiles) {
+      try {
+        const { url, output } = await convertFile(ffmpegRef.current, file);
+        tmpFiles = tmpFiles.map((elt) =>
+          elt === file
+            ? {
+                ...elt,
+                isConverted: true,
+                isConverting: false,
+                url,
+                output,
+              }
+            : elt
+        );
+        setIsConversionCompleted(true);
+      } catch {
+        tmpFiles = tmpFiles.map((elt) =>
+          elt === file
+            ? {
+                ...elt,
+                isConverted: false,
+                isConverting: false,
+                isErrored: true,
+              }
+            : elt
+        );
+      } finally {
+        setFiles(tmpFiles);
+      }
+    }
+  };
+
+  const handleDownloadAll = () => {
+    for (const file of files) {
+      if (!file.isErrored) {
+        handleSingleFiledownload(file);
+      }
+    }
+  };
+
+  const handleSingleFiledownload = (file: ExtendedFile) => {
+    const a = document.createElement("a");
+    a.style.display = "none";
+    if (file.url && file.output) {
+      a.href = file.url;
+      a.download = file.output as string;
+    }
+    document.body.appendChild(a);
+    a.click();
+    if (file.url) {
+      URL.revokeObjectURL(file.url);
+    }
+    document.body.removeChild(a);
+  };
+
   if (files.length > 0) {
     return (
       <div className="flex flex-col items-center space-y-4 w-full">
@@ -65,17 +135,24 @@ const Dropzone = ({}) => {
               files={files}
               setFiles={setFiles}
               onTypeChange={handleTypeChange}
+              downloadFile={handleSingleFiledownload}
             />
           ))}
         </div>
-        <Button
-          variant="default"
-          onClick={() => {
-            // Handle conversion for all files with their selected types
-          }}
-        >
-          Convert All
-        </Button>
+        {isFFMPEGLoaded && !isConersionCompleted && (
+          <Button
+            disabled={!isFFMPEGLoaded}
+            variant="default"
+            onClick={() => handleFileConversion()}
+          >
+            Convert Files
+          </Button>
+        )}
+        {isConersionCompleted && files.length > 1 && (
+          <Button variant={"default"} onClick={() => handleDownloadAll()}>
+            Download All
+          </Button>
+        )}
       </div>
     );
   }

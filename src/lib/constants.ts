@@ -1,3 +1,9 @@
+export const accepted_files = {
+    "audio/*": [],
+    "video/*": [],
+    "image/*": [],
+  };
+
 export const extensions = {
     image: [
       "jpg",
