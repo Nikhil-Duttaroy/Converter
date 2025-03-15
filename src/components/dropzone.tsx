@@ -3,12 +3,12 @@ import ReactDropzone from "react-dropzone";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import FileCard from "./fileCard";
+import { ExtendedFile } from "@/lib/types";
 
 const Dropzone = ({}) => {
   //States
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<ExtendedFile[]>([]);
   const [isHovering, setIsHovering] = useState<boolean>(false);
-
   const accepted_files = {
     "audio/*": [],
     "video/*": [],
@@ -16,9 +16,26 @@ const Dropzone = ({}) => {
   };
 
   //Functions
-  const handleUpload = (files: File[]) => {
-    console.log(files);
-    setFiles(files);
+  const handleUpload = (files: ExtendedFile[]) => {
+    const filesWithMetadata = files.map((file) => ({
+      name: file.name, // Manually assign properties
+      size: file.size,
+      type: file.type,
+      lastModified: file.lastModified,
+      path: file.path,
+      relativePath: file.relativePath,
+      from: file.name.split(".").pop(),
+      to: "",
+      isConverted: false,
+      isConverting: false,
+      isErrored: false,
+      url: "",
+      output: null,
+    })) as ExtendedFile[];
+
+    console.log("🚀 ~ files:", files);
+    console.log("🚀 ~ filesWithMetadata:", filesWithMetadata);
+    setFiles(filesWithMetadata);
   };
 
   const handleHover = () => {
@@ -29,16 +46,36 @@ const Dropzone = ({}) => {
     setIsHovering(false);
   };
 
+  const handleTypeChange = (index: number, value: string) => {
+    const newFiles = [...files];
+    newFiles[index] = { ...newFiles[index], to: value };
+    setFiles(newFiles);
+  };
 
-  if(files.length > 0){
+  if (files.length > 0) {
     return (
       <div className="flex flex-col items-center space-y-4 w-full">
         <h1 className="text-3xl font-bold">Uploaded Files</h1>
         <div className="flex flex-col items-center space-y-4 w-[80%]">
           {files.map((file, index) => (
-           <FileCard key={index} index={index} file={file} files={files} setFiles={setFiles}/>
+            <FileCard
+              key={index}
+              index={index}
+              file={file}
+              files={files}
+              setFiles={setFiles}
+              onTypeChange={handleTypeChange}
+            />
           ))}
         </div>
+        <Button
+          variant="default"
+          onClick={() => {
+            // Handle conversion for all files with their selected types
+          }}
+        >
+          Convert All
+        </Button>
       </div>
     );
   }
