@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     description:
       "Convert videos, images, and audio files instantly in your browser with MediaMorph.",
     type: "website",
-    // url: "https://www.mediamorph.com", // Change this to your actual domain
+    url: "https://mediamorph.netlify.app", // Change this to your actual domain
     siteName: "MediaMorph",
     // images: [
     //   {
