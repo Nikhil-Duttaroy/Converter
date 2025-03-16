@@ -7,7 +7,8 @@ import { ExtendedFile } from "@/lib/types";
 import { convertFile, loadFfmpeg } from "@/lib/ffmpeg";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { accepted_files } from "@/lib/constants";
-import { Download } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
+import { Badge } from "./ui/badge";
 
 const Dropzone = ({}) => {
   //States
@@ -131,6 +132,8 @@ const Dropzone = ({}) => {
     document.body.removeChild(a);
   };
 
+  const allFilesHaveToValue = files.every((file) => file.to !== "");
+
   if (files.length > 0) {
     return (
       <div className="flex flex-col items-center space-y-4 w-full">
@@ -148,20 +151,29 @@ const Dropzone = ({}) => {
             />
           ))}
         </div>
-        {isFFMPEGLoaded && !isConversionCompleted && (
-          <Button
-            disabled={!isFFMPEGLoaded}
-            variant="default"
-            onClick={() => handleFileConversion()}
-          >
-            Convert Files
-          </Button>
-        )}
-        {isConversionCompleted && files.length > 1 && (
-          <div className="flex gap-4">
-            <Button variant="default" onClick={() => handleDownloadAll()}>
-              <Download /> Download All
+        {!isConversionCompleted &&
+          (isFFMPEGLoaded ? (
+            <Button
+              disabled={!isFFMPEGLoaded || !allFilesHaveToValue}
+              variant="default"
+              onClick={() => handleFileConversion()}
+            >
+              Convert Files
             </Button>
+          ) : (
+            <Badge>
+              <Loader2 className="animate-spin" />
+              Accessing Conversion Powers
+            </Badge>
+          ))}
+
+        {isConversionCompleted && (
+          <div className="flex gap-4">
+            {files.length > 1 && (
+              <Button variant="default" onClick={() => handleDownloadAll()}>
+                <Download /> Download All
+              </Button>
+            )}
             <Button variant="secondary" onClick={() => reset()}>
               Convert More Files
             </Button>
