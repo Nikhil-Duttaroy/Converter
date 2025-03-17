@@ -86,30 +86,35 @@ const Dropzone = ({}) => {
     setFiles(tmpFiles);
 
     try {
-      const results = await convertFiles(ffmpegRef.current, tmpFiles);
-
-      tmpFiles = tmpFiles.map((file) => {
-        const result = results.find((r) => r.file === file);
-        if (result) {
-          if (result.result.error) {
-            return {
-              ...file,
-              isConverted: false,
-              isConverting: false,
-              isErrored: true,
-              error: result.result.error,
-            };
+       await convertFiles(
+        ffmpegRef.current, 
+        tmpFiles,
+        (file, result) => {
+          // Update file status in real-time
+          const fileIndex = tmpFiles.findIndex(f => f === file);
+          if (fileIndex !== -1) {
+            if (result.error) {
+              tmpFiles[fileIndex] = {
+                ...tmpFiles[fileIndex],
+                isConverted: false,
+                isConverting: false,
+                isErrored: true,
+                error: result.error,
+              };
+            } else {
+              tmpFiles[fileIndex] = {
+                ...tmpFiles[fileIndex],
+                isConverted: true,
+                isConverting: false,
+                url: result.url,
+                output: result.output,
+              };
+            }
+            // Update state after each file is processed
+            setFiles([...tmpFiles]);
           }
-          return {
-            ...file,
-            isConverted: true,
-            isConverting: false,
-            url: result.result.url,
-            output: result.result.output,
-          };
         }
-        return file;
-      });
+      );
 
       // Check if any files were converted successfully
       const hasSuccessfulConversions = tmpFiles.some(
@@ -135,7 +140,6 @@ const Dropzone = ({}) => {
         isConverting: false,
         isErrored: true,
       }));
-    } finally {
       setFiles(tmpFiles);
     }
   };

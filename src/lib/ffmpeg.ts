@@ -164,7 +164,7 @@ async function convertImage(file: File, format: string): Promise<Blob> {
  * @param {typeof VIDEO_CODEC_PRESETS.h264 | typeof VIDEO_CODEC_PRESETS.vp8} preset - Codec preset
  * @returns {string[]} FFmpeg command array
  */
-function buildVideoCodecCommand(format: string, preset: typeof VIDEO_CODEC_PRESETS.h264 | typeof VIDEO_CODEC_PRESETS.vp8): string[] {
+function buildVideoCodecCommand(format: string, preset: typeof VIDEO_CODEC_PRESETS.h264 | typeof VIDEO_CODEC_PRESETS.vp8): string[] {   
   const cmd = ['-c:v', preset.codec];
   
   if ('crf' in preset) {
@@ -380,11 +380,13 @@ export async function convertFile(
  * Converts multiple files using FFmpeg
  * @param {FFmpeg} ffmpeg - FFmpeg instance
  * @param {ExtendedFile[]} files - Array of files to convert
+ * @param {Function} onProgress - Callback function to handle progress updates
  * @returns {Promise<Array<{ file: ExtendedFile; result: { url: string; output: string; error?: string } }>>} Conversion results
  */
 export async function convertFiles(
   ffmpeg: FFmpeg,
-  files: ExtendedFile[]
+  files: ExtendedFile[],
+  onProgress?: (file: ExtendedFile, result: { url: string; output: string; error?: string }) => void
 ): Promise<Array<{ file: ExtendedFile; result: { url: string; output: string; error?: string } }>> {
   const results: Array<{ file: ExtendedFile; result: { url: string; output: string; error?: string } }> = [];
   
@@ -398,31 +400,33 @@ export async function convertFiles(
       optimizeMemoryUsage(); 
       
       const chunk = sortedFiles.slice(i, i + CHUNK_SIZE);
-      const chunkResults = await Promise.allSettled(
-        chunk.map(async (file) => {
-          try {
-            const result = await convertFile(ffmpeg, file);
-            return { file, result };
-          } catch (err) {
-            const error = err as Error;
-            console.error(`Error converting file ${file.name}:`, error);
-            return { 
-              file, 
-              result: { url: '', output: '', error } 
-            };
-          }
-        })
-      );
       
-      results.push(...chunkResults.map(result => {
-        if (result.status === 'fulfilled') {
-          return result.value;
+      // Process files one by one in the chunk
+      for (const file of chunk) {
+        try {
+          const result = await convertFile(ffmpeg, file);
+          const fileResult = { file, result };
+          results.push(fileResult);
+          
+          // Emit progress update if callback is provided
+          if (onProgress) {
+            onProgress(file, result);
+          }
+        } catch (err) {
+          const error = err as Error;
+          console.error(`Error converting file ${file.name}:`, error);
+          const fileResult = { 
+            file, 
+            result: { url: '', output: '', error: error.message } 
+          };
+          results.push(fileResult);
+          
+          // Emit progress update for error if callback is provided
+          if (onProgress) {
+            onProgress(file, fileResult.result);
+          }
         }
-        return {
-          file: result.reason.file,
-          result: { url: '', output: '', error: result.reason }
-        };
-      }));
+      }
     } catch (error) {
       console.error('Chunk processing error:', error);
     }

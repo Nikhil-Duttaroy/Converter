@@ -9,4 +9,5 @@ export type ExtendedFile = File & {
   url?: string;
   output?: unknown;
   fileData?: File;
+  error?: Error | string;
 };
