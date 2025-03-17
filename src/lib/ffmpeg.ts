@@ -7,49 +7,19 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { toBlobURL, fetchFile } from "@ffmpeg/util";
 import { ExtendedFile } from "./types";
+import {
+  MAX_FILE_SIZE,
+  CHUNK_SIZE,
+  MEMORY_SPLIT,
+  MIN_MEMORY,
+  DEFAULT_MEMORY,
+  WEB_FRIENDLY_IMAGE_FORMATS,
+  VECTOR_FORMATS,
+  VIDEO_CODEC_PRESETS,
+  AUDIO_CODEC_PRESETS
+} from "./constants";
 
 // Constants
-const MAX_FILE_SIZE = 2000 * 1024 * 1024; // 2GB
-const CHUNK_SIZE = 2; // Reduce chunk size for large files
-const MEMORY_SPLIT = 0.8; // 80% of available memory for processing
-const MIN_MEMORY = 64 * 1024 * 1024; // 64MB minimum
-const DEFAULT_MEMORY = 512 * 1024 * 1024; // 512MB default
-
-// File format sets
-const WEB_FRIENDLY_IMAGE_FORMATS = new Set(['jpg', 'jpeg', 'png', 'webp']);
-const VECTOR_FORMATS = new Set(['svg', 'eps', 'ai']);
-
-// FFmpeg codec presets
-const VIDEO_CODEC_PRESETS = {
-  h264: {
-    codec: 'libx264',
-    crf: '28',
-    preset: 'faster',
-    profile: 'main',
-  },
-  vp8: {
-    codec: 'libvpx',
-    cpuUsed: '4',
-    deadline: 'realtime',
-    bitrate: '1M',
-  }
-} as const;
-
-const AUDIO_CODEC_PRESETS = {
-  aac: {
-    codec: 'aac',
-    bitrate: '128k',
-  },
-  mp3: {
-    codec: 'libmp3lame',
-    bitrate: '192k',
-    compressionLevel: '2',
-  },
-  vorbis: {
-    codec: 'libvorbis',
-    quality: '4',
-  }
-} as const;
 
 /**
  * Loads and initializes FFmpeg with core and WASM files
