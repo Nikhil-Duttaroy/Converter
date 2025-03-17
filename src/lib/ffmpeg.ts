@@ -283,6 +283,31 @@ async function handleImageConversion(
         '-max_muxing_queue_size', '1024'
       );
       break;
+    case 'raw':
+      // Get image dimensions for raw format
+      let width = 1920;
+      let height = 1080;
+      try {
+        const probeCmd = ['-i', input];
+        await ffmpeg.exec(probeCmd);
+        const probeOutput = await ffmpeg.readFile('ffmpeg-output.txt') as Uint8Array;
+        const probeText = new TextDecoder().decode(probeOutput);
+        const dimensionsMatch = probeText.match(/Stream.*Video.* (\d+)x(\d+)/);
+        if (dimensionsMatch) {
+          width = parseInt(dimensionsMatch[1]);
+          height = parseInt(dimensionsMatch[2]);
+        }
+      } catch (error) {
+        console.warn('Could not get image dimensions, using default size',error);
+      }
+      
+      // For raw format, we need to specify the pixel format and image dimensions
+      ffmpeg_cmd.push(
+        '-f', 'rawvideo',
+        '-pix_fmt', 'rgb24',
+        '-s', `${width}x${height}`
+      );
+      break;
   }
 
   ffmpeg_cmd.push(output);
