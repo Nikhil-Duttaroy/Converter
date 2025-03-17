@@ -54,26 +54,32 @@ const FileCard = ({
   return (
     <Card
       key={index}
-      className="flex flex-row items-center w-full justify-between"
+      className="flex flex-col sm:flex-row items-start sm:items-center w-full justify-between gap-4 p-4"
     >
-      <CardHeader className="w-2/5 truncate">
-        {/* {renderPreview()} */}
-        {file.name}({getBytesToSize(file.size)})
+      <CardHeader className="w-full sm:w-2/5 p-0 min-w-0">
+        <div className="text-sm sm:text-base flex items-center gap-2 overflow-hidden">
+          <span className="truncate">
+            {file.name}
+          </span>
+          <span className="text-muted-foreground shrink-0">
+            ({getBytesToSize(file.size)})
+          </span>
+        </div>
       </CardHeader>
-      <CardContent className="flex justify-start items-center w-2/5 gap-4">
-        <CardAction>
+      <CardContent className="flex justify-start items-center w-full sm:w-2/5 gap-4 p-0">
+        <CardAction className="w-full sm:w-auto">
           {file.isConverting ? (
-            <Badge variant="default">
-              <Loader2 className="animate-spin" />
+            <Badge variant="default" className="w-full sm:w-auto">
+              <Loader2 className="animate-spin mr-2 h-4 w-4" />
               Converting
             </Badge>
           ) : file.isConverted ? (
-            <Button onClick={() => downloadFile(file)}>
-              <Download /> Download
+            <Button onClick={() => downloadFile(file)} className="w-full sm:w-auto">
+              <Download className="mr-2 h-4 w-4" /> Download
             </Button>
           ) : file.isErrored ? (
-            <Badge variant="destructive">
-              <OctagonAlert />
+            <Badge variant="destructive" className="w-full sm:w-auto">
+              <OctagonAlert className="mr-2 h-4 w-4" />
               Error in Converting File
             </Badge>
           ) : (
@@ -81,7 +87,7 @@ const FileCard = ({
               value={file.to}
               onValueChange={(value) => onTypeChange(index, value)}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Convert To" />
               </SelectTrigger>
               <SelectContent className="h-fit">
@@ -107,7 +113,7 @@ const FileCard = ({
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent value="video">
-                      <div className="grid grid-cols-3 gap-2 w-fit">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-fit">
                         {extensions.video.map((elt, i) => (
                           <div key={i} className="col-span-1 text-center">
                             <SelectItem value={elt} className="mx-auto">
@@ -118,7 +124,7 @@ const FileCard = ({
                       </div>
                     </TabsContent>
                     <TabsContent value="audio">
-                      <div className="grid grid-cols-3 gap-2 w-fit">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-fit">
                         {extensions.audio.map((elt, i) => (
                           <div key={i} className="col-span-1 text-center">
                             <SelectItem value={elt} className="mx-auto">
@@ -146,10 +152,11 @@ const FileCard = ({
           )}
         </CardAction>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="w-full sm:w-auto p-0">
         <Button
           variant="default"
           onClick={() => setFiles(files.filter((_, i) => i !== index))}
+          className="w-full sm:w-auto"
         >
           Remove
         </Button>

@@ -171,7 +171,7 @@ const Dropzone = ({}) => {
 
   if (files.length > 0) {
     return (
-      <div className="flex flex-col items-center space-y-4 w-full">
+      <div className="flex flex-col items-center space-y-4 w-full pb-4">
         {conversionError && (
           <div
             className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
@@ -180,7 +180,7 @@ const Dropzone = ({}) => {
             <span className="block sm:inline">{conversionError}</span>
           </div>
         )}
-        <h1 className="text-3xl font-bold">Uploaded Files</h1>
+        <h1 className="text-3xl font-bold text-center">Uploaded Files</h1>
         <div className="flex flex-col items-center space-y-4 w-[80%]">
           {files.map((file, index) => (
             <FileCard
@@ -237,7 +237,7 @@ const Dropzone = ({}) => {
       {({ getRootProps, getInputProps }) => (
         <div
           {...getRootProps()}
-          className="flex items-center justify-center border-2 border-dashed shadow-sm cursor-pointer bg-background h-72 lg:h-80 xl:h-96  w-3/5 rounded-3xl border-secondary"
+          className="flex items-center justify-center border-2 border-dashed shadow-sm cursor-pointer bg-background h-72 lg:h-80 xl:h-96 w-4/5 md:w-3/5 rounded-3xl border-secondary"
         >
           <input {...getInputProps()} />
           <div className="space-y-4 text-foreground flex flex-col justify-center items-center">
