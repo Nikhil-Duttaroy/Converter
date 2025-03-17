@@ -6,7 +6,11 @@ import FileCard from "./fileCard";
 import { ExtendedFile } from "@/lib/types";
 import { convertFiles, loadFfmpeg } from "@/lib/ffmpeg";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { accepted_files } from "@/lib/constants";
+import {
+  accepted_files,
+  MAX_FILE_SIZE,
+  MAX_FILE_SIZE_MB,
+} from "@/lib/constants";
 import { Download, Loader2 } from "lucide-react";
 import { Badge } from "./ui/badge";
 
@@ -224,6 +228,7 @@ const Dropzone = ({}) => {
       onDragEnter={handleHover}
       onDragLeave={handleExitHover}
       accept={accepted_files}
+      maxSize={MAX_FILE_SIZE}
     >
       {({ getRootProps, getInputProps }) => (
         <div
@@ -239,6 +244,9 @@ const Dropzone = ({}) => {
                 <Button variant="default" size="lg">
                   Browse Files
                 </Button>
+                <p className="text-sm text-muted-foreground">
+                  Maximum file size: {MAX_FILE_SIZE_MB}MB
+                </p>
               </>
             ) : (
               <p className="text-lg font-bold">Yes, go on, drop them here.</p>
