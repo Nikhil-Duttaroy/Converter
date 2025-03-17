@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { useEffect, useRef, useState } from "react";
 import FileCard from "./fileCard";
 import { ExtendedFile } from "@/lib/types";
-import { convertFile, loadFfmpeg } from "@/lib/ffmpeg";
+import { convertFiles, loadFfmpeg } from "@/lib/ffmpeg";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { accepted_files } from "@/lib/constants";
 import { Download, Loader2 } from "lucide-react";
@@ -17,6 +17,7 @@ const Dropzone = ({}) => {
   const [isFFMPEGLoaded, setIsFFMPEGLoaded] = useState<boolean>(false);
   const [isConversionCompleted, setIsConversionCompleted] =
     useState<boolean>(false);
+  const [conversionError, setConversionError] = useState<string>("");
   const ffmpegRef = useRef(new FFmpeg());
 
   //Functions
@@ -72,40 +73,66 @@ const Dropzone = ({}) => {
   }, []);
 
   const handleFileConversion = async () => {
+    setConversionError("");
     let tmpFiles = files.map((elt) => ({
       ...elt,
       isConverting: true,
+      isErrored: false, // Reset error state
     }));
-    for (const file of tmpFiles) {
-      try {
-        const { url, output } = await convertFile(ffmpegRef.current, file);
-        tmpFiles = tmpFiles.map((elt) =>
-          elt === file
-            ? {
-                ...elt,
-                isConverted: true,
-                isConverting: false,
-                url,
-                output,
-              }
-            : elt
+    setFiles(tmpFiles);
+
+    try {
+      const results = await convertFiles(ffmpegRef.current, tmpFiles);
+
+      tmpFiles = tmpFiles.map((file) => {
+        const result = results.find((r) => r.file === file);
+        if (result) {
+          if (result.result.error) {
+            return {
+              ...file,
+              isConverted: false,
+              isConverting: false,
+              isErrored: true,
+              error: result.result.error,
+            };
+          }
+          return {
+            ...file,
+            isConverted: true,
+            isConverting: false,
+            url: result.result.url,
+            output: result.result.output,
+          };
+        }
+        return file;
+      });
+
+      // Check if any files were converted successfully
+      const hasSuccessfulConversions = tmpFiles.some(
+        (file) => file.isConverted
+      );
+      setIsConversionCompleted(hasSuccessfulConversions);
+
+      // Show error if all files failed
+      if (!hasSuccessfulConversions) {
+        setConversionError(
+          "Failed to convert all files. Please try with smaller files or a different format."
         );
-        setIsConversionCompleted(true);
-      } catch (err) {
-        console.error("🚀 ~ err:", err);
-        tmpFiles = tmpFiles.map((elt) =>
-          elt === file
-            ? {
-                ...elt,
-                isConverted: false,
-                isConverting: false,
-                isErrored: true,
-              }
-            : elt
-        );
-      } finally {
-        setFiles(tmpFiles);
       }
+    } catch (err) {
+      const error = err as Error;
+      console.error("Conversion error:", error);
+      setConversionError(
+        error.message || "An error occurred during conversion"
+      );
+      tmpFiles = tmpFiles.map((file) => ({
+        ...file,
+        isConverted: false,
+        isConverting: false,
+        isErrored: true,
+      }));
+    } finally {
+      setFiles(tmpFiles);
     }
   };
 
@@ -137,6 +164,14 @@ const Dropzone = ({}) => {
   if (files.length > 0) {
     return (
       <div className="flex flex-col items-center space-y-4 w-full">
+        {conversionError && (
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
+            <span className="block sm:inline">{conversionError}</span>
+          </div>
+        )}
         <h1 className="text-3xl font-bold">Uploaded Files</h1>
         <div className="flex flex-col items-center space-y-4 w-[80%]">
           {files.map((file, index) => (
