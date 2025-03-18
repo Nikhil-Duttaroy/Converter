@@ -21,16 +21,23 @@ import { ExtendedFile } from "@/lib/types";
 import { Badge } from "./ui/badge";
 import { Download, Loader2, OctagonAlert, RotateCcw } from "lucide-react";
 
+/**
+ * Props for the FileCard component
+ */
 type Props = {
-  index: number;
-  file: ExtendedFile;
-  files: ExtendedFile[];
-  setFiles: (files: ExtendedFile[]) => void;
-  onTypeChange: (index: number, value: string) => void;
-  downloadFile: (file: ExtendedFile) => void;
-  onRetry: (index: number) => void;
+  index: number; // Index of the file in the parent's files array
+  file: ExtendedFile; // File data with conversion metadata
+  files: ExtendedFile[]; // Array of all files
+  setFiles: (files: ExtendedFile[]) => void; // Function to update files array
+  onTypeChange: (index: number, value: string) => void; // Handler for format change
+  downloadFile: (file: ExtendedFile) => void; // Handler for file download
+  onRetry: (index: number) => void; // Handler for retrying failed conversion
 };
 
+/**
+ * FileCard component that displays file information and conversion controls
+ * Handles different states: converting, converted, error, and format selection
+ */
 const FileCard = ({
   index,
   file,

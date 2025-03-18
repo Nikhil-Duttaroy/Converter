@@ -14,17 +14,24 @@ import {
 import { Download, Loader2 } from "lucide-react";
 import { Badge } from "./ui/badge";
 
+/**
+ * Dropzone component that handles file uploads and conversions
+ * Uses FFmpeg.wasm for client-side file conversion
+ */
 const Dropzone = ({}) => {
-  //States
+  // State management for files and UI status
   const [files, setFiles] = useState<ExtendedFile[]>([]);
   const [isHovering, setIsHovering] = useState<boolean>(false);
   const [isFFMPEGLoaded, setIsFFMPEGLoaded] = useState<boolean>(false);
-  const [isConversionCompleted, setIsConversionCompleted] =
-    useState<boolean>(false);
+  const [isConversionCompleted, setIsConversionCompleted] = useState<boolean>(false);
   const [conversionError, setConversionError] = useState<string>("");
+  // Keep FFmpeg instance in a ref to persist between renders
   const ffmpegRef = useRef(new FFmpeg());
 
-  //Functions
+  /**
+   * Reset all state to initial values
+   * Used when user wants to convert more files
+   */
   const reset = () => {
     setFiles([]);
     setIsHovering(false);
@@ -32,61 +39,78 @@ const Dropzone = ({}) => {
     setIsConversionCompleted(false);
   };
 
+  /**
+   * Process uploaded files and add metadata
+   * @param files - Array of files uploaded by user
+   */
   const handleUpload = (files: ExtendedFile[]) => {
     const filesWithMetadata = files.map((file) => ({
       fileData: file,
-      name: file.name, // Manually assign properties
+      name: file.name,
       size: file.size,
       type: file.type,
       lastModified: file.lastModified,
       path: file.path,
       relativePath: file.relativePath,
-      from: file.name.split(".").pop(),
-      to: "",
+      from: file.name.split(".").pop(), // Extract original file extension
+      to: "", // Target format (to be selected by user)
       isConverted: false,
       isConverting: false,
       isErrored: false,
-      url: "",
-      output: null,
+      url: "", // URL for converted file
+      output: null, // Output filename
     })) as ExtendedFile[];
 
     setFiles(filesWithMetadata);
   };
 
-  const handleHover = () => {
-    setIsHovering(true);
-  };
+  // Drag and drop UI handlers
+  const handleHover = () => setIsHovering(true);
+  const handleExitHover = () => setIsHovering(false);
 
-  const handleExitHover = () => {
-    setIsHovering(false);
-  };
-
+  /**
+   * Update target format for a specific file
+   * @param index - Index of file in files array
+   * @param value - Selected target format
+   */
   const handleTypeChange = (index: number, value: string) => {
     const newFiles = [...files];
     newFiles[index] = { ...newFiles[index], to: value };
     setFiles(newFiles);
   };
 
+  /**
+   * Initialize FFmpeg instance
+   * Loads required WASM files and core functionality
+   */
   const load = async () => {
     const ffmpeg_response: FFmpeg = await loadFfmpeg();
     ffmpegRef.current = ffmpeg_response;
     setIsFFMPEGLoaded(true);
   };
+
+  // Load FFmpeg on component mount
   useEffect(() => {
     load();
   }, []);
 
+  /**
+   * Handle conversion of all files
+   * Updates UI state during conversion and handles errors
+   */
   const handleFileConversion = async () => {
     setConversionError("");
+    // Reset error state and mark all files as converting
     let tmpFiles = files.map((elt) => ({
       ...elt,
       isConverting: true,
-      isErrored: false, // Reset error state
+      isErrored: false,
     }));
     setFiles(tmpFiles);
 
     try {
-       await convertFiles(
+      // Convert all files and handle progress updates
+      await convertFiles(
         ffmpegRef.current, 
         tmpFiles,
         (file, result) => {
@@ -94,6 +118,7 @@ const Dropzone = ({}) => {
           const fileIndex = tmpFiles.findIndex(f => f === file);
           if (fileIndex !== -1) {
             if (result.error) {
+              // Handle conversion error
               tmpFiles[fileIndex] = {
                 ...tmpFiles[fileIndex],
                 isConverted: false,
@@ -102,6 +127,7 @@ const Dropzone = ({}) => {
                 error: result.error,
               };
             } else {
+              // Handle successful conversion
               tmpFiles[fileIndex] = {
                 ...tmpFiles[fileIndex],
                 isConverted: true,
@@ -110,13 +136,12 @@ const Dropzone = ({}) => {
                 output: result.output,
               };
             }
-            // Update state after each file is processed
             setFiles([...tmpFiles]);
           }
         }
       );
 
-      // Check if any files were converted successfully
+      // Check overall conversion status
       const hasSuccessfulConversions = tmpFiles.some(
         (file) => file.isConverted
       );
@@ -129,6 +154,7 @@ const Dropzone = ({}) => {
         );
       }
     } catch (err) {
+      // Handle global conversion error
       const error = err as Error;
       console.error("Conversion error:", error);
       setConversionError(
@@ -144,6 +170,9 @@ const Dropzone = ({}) => {
     }
   };
 
+  /**
+   * Download all successfully converted files
+   */
   const handleDownloadAll = () => {
     for (const file of files) {
       if (!file.isErrored) {
@@ -152,6 +181,11 @@ const Dropzone = ({}) => {
     }
   };
 
+  /**
+   * Download a single converted file
+   * Creates a temporary link element to trigger download
+   * @param file - File to download
+   */
   const handleSingleFiledownload = (file: ExtendedFile) => {
     const a = document.createElement("a");
     a.style.display = "none";
@@ -162,16 +196,20 @@ const Dropzone = ({}) => {
     document.body.appendChild(a);
     a.click();
     if (file.url) {
-      URL.revokeObjectURL(file.url);
+      URL.revokeObjectURL(file.url); // Clean up object URL
     }
     document.body.removeChild(a);
   };
 
+  /**
+   * Retry conversion for a single failed file
+   * @param index - Index of file to retry
+   */
   const handleRetry = async (index: number) => {
     const fileToRetry = files[index];
     if (!fileToRetry || !fileToRetry.to) return;
 
-    // Reset the file's state
+    // Reset file state for retry
     const newFiles = [...files];
     newFiles[index] = {
       ...fileToRetry,
@@ -184,7 +222,7 @@ const Dropzone = ({}) => {
     setFiles(newFiles);
 
     try {
-      // Convert just this file
+      // Convert only the retry file
       await convertFiles(
         ffmpegRef.current,
         [newFiles[index]],
@@ -192,6 +230,7 @@ const Dropzone = ({}) => {
           const fileIndex = newFiles.findIndex(f => f === file);
           if (fileIndex !== -1) {
             if (result.error) {
+              // Handle retry error
               newFiles[fileIndex] = {
                 ...newFiles[fileIndex],
                 isConverted: false,
@@ -200,6 +239,7 @@ const Dropzone = ({}) => {
                 error: result.error,
               };
             } else {
+              // Handle successful retry
               newFiles[fileIndex] = {
                 ...newFiles[fileIndex],
                 isConverted: true,
@@ -213,6 +253,7 @@ const Dropzone = ({}) => {
         }
       );
     } catch (err) {
+      // Handle retry error
       const error = err as Error;
       console.error("Retry conversion error:", error);
       newFiles[index] = {
@@ -226,11 +267,14 @@ const Dropzone = ({}) => {
     }
   };
 
+  // Check if all files have a target format selected
   const allFilesHaveToValue = files.every((file) => file.to !== "");
 
+  // Render file list and conversion controls
   if (files.length > 0) {
     return (
       <div className="flex flex-col items-center space-y-4 w-full pb-4">
+        {/* Global error message */}
         {conversionError && (
           <div
             className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
@@ -240,6 +284,7 @@ const Dropzone = ({}) => {
           </div>
         )}
         <h1 className="text-3xl font-bold text-center">Uploaded Files</h1>
+        {/* File cards list */}
         <div className="flex flex-col items-center space-y-4 w-[80%]">
           {files.map((file, index) => (
             <FileCard
@@ -254,6 +299,7 @@ const Dropzone = ({}) => {
             />
           ))}
         </div>
+        {/* Conversion controls */}
         {!isConversionCompleted &&
           (isFFMPEGLoaded ? (
             <Button
@@ -270,6 +316,7 @@ const Dropzone = ({}) => {
             </Badge>
           ))}
 
+        {/* Post-conversion controls */}
         {isConversionCompleted && (
           <div className="flex gap-4">
             {files.length > 1 && (
@@ -286,6 +333,7 @@ const Dropzone = ({}) => {
     );
   }
 
+  // Render dropzone when no files are uploaded
   return (
     <ReactDropzone
       onDrop={handleUpload}
