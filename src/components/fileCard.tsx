@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { extensions } from "@/lib/constants";
 import { ExtendedFile } from "@/lib/types";
 import { Badge } from "./ui/badge";
-import { Download, Loader2, OctagonAlert } from "lucide-react";
+import { Download, Loader2, OctagonAlert, RotateCcw } from "lucide-react";
 
 type Props = {
   index: number;
@@ -28,6 +28,7 @@ type Props = {
   setFiles: (files: ExtendedFile[]) => void;
   onTypeChange: (index: number, value: string) => void;
   downloadFile: (file: ExtendedFile) => void;
+  onRetry: (index: number) => void;
 };
 
 const FileCard = ({
@@ -37,6 +38,7 @@ const FileCard = ({
   setFiles,
   onTypeChange,
   downloadFile,
+  onRetry,
 }: Props) => {
   // TODO : Keep Preview on Click of name of the file in a Modal
   // const renderPreview = () => {
@@ -79,10 +81,21 @@ const FileCard = ({
               <Download className="mr-2 h-4 w-4" /> Download
             </Button>
           ) : file.isErrored ? (
-            <Badge variant="destructive" className="w-full sm:w-auto">
-              <OctagonAlert className="mr-2 h-4 w-4" />
-              Error in Converting File
-            </Badge>
+            <div className="flex gap-2 items-center">
+              <Badge variant="destructive" className="w-full sm:w-auto">
+                <OctagonAlert className="mr-2 h-4 w-4" />
+                Error in Converting File
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onRetry(index)}
+                className="shrink-0"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Retry
+              </Button>
+            </div>
           ) : (
             <Select
               value={file.to}

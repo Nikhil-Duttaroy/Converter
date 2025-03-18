@@ -167,6 +167,65 @@ const Dropzone = ({}) => {
     document.body.removeChild(a);
   };
 
+  const handleRetry = async (index: number) => {
+    const fileToRetry = files[index];
+    if (!fileToRetry || !fileToRetry.to) return;
+
+    // Reset the file's state
+    const newFiles = [...files];
+    newFiles[index] = {
+      ...fileToRetry,
+      isConverting: true,
+      isErrored: false,
+      isConverted: false,
+      url: "",
+      output: null,
+    };
+    setFiles(newFiles);
+
+    try {
+      // Convert just this file
+      await convertFiles(
+        ffmpegRef.current,
+        [newFiles[index]],
+        (file, result) => {
+          const fileIndex = newFiles.findIndex(f => f === file);
+          if (fileIndex !== -1) {
+            if (result.error) {
+              newFiles[fileIndex] = {
+                ...newFiles[fileIndex],
+                isConverted: false,
+                isConverting: false,
+                isErrored: true,
+                error: result.error,
+              };
+            } else {
+              newFiles[fileIndex] = {
+                ...newFiles[fileIndex],
+                isConverted: true,
+                isConverting: false,
+                url: result.url,
+                output: result.output,
+              };
+            }
+            setFiles([...newFiles]);
+          }
+        }
+      );
+    } catch (err) {
+      const error = err as Error;
+      console.error("Retry conversion error:", error);
+      newFiles[index] = {
+        ...newFiles[index],
+        isConverted: false,
+        isConverting: false,
+        isErrored: true,
+        error: error.message,
+      };
+      setFiles([...newFiles]);
+    }
+  };
+
   const allFilesHaveToValue = files.every((file) => file.to !== "");
 
   if (files.length > 0) {
@@ -191,6 +250,7 @@ const Dropzone = ({}) => {
               setFiles={setFiles}
               onTypeChange={handleTypeChange}
               downloadFile={handleSingleFiledownload}
+              onRetry={handleRetry}
             />
           ))}
         </div>
