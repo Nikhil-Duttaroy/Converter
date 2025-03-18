@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Media File Converter
+
+A modern web application for converting media files directly in your browser. Built with Next.js and FFmpeg, this application allows you to convert various audio, video, and image formats without uploading your files to any server.
+
+## Features
+
+- 🚀 Client-side file conversion using FFmpeg
+- 📁 Support for multiple file formats:
+  - Images: JPG, JPEG, PNG, GIF, BMP, WebP, ICO, TIFF, SVG, RAW, TGA
+  - Videos: MP4, M4V, AVI, MOV, WMV, MKV, FLV, WebM, H.264, HEVC
+  - Audio: MP3, WAV, OGG, AAC, WMA, FLAC, M4A
+- 💾 Maximum file size: 2GB
+- 🔒 Privacy-focused: All conversion happens locally in your browser
+- 🎨 Modern UI with drag-and-drop support
+- 📱 Responsive design for all devices
+- ⚡ Fast conversion with optimized FFmpeg settings
+
+## Tech Stack
+
+- Next.js 15.2.1
+- React 19
+- TypeScript
+- FFmpeg.wasm
+- TailwindCSS
+- Radix UI Components
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js (v18 or higher)
+- pnpm (recommended) or npm
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/converter.git
+cd converter
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+pnpm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Start the development server:
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Learn More
+### Building for Production
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm build
+pnpm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Usage
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Drag and drop your files into the upload area or click to browse
+2. Select the desired output format for each file
+3. Click "Convert Files" to start the conversion
+4. Download your converted files individually or all at once
 
-## Deploy on Vercel
+## Supported Conversions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Video Conversions
+- H.264 encoding with optimized settings
+- VP8 encoding for WebM format
+- Various container formats (MP4, WebM, etc.)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Audio Conversions
+- AAC encoding with 128k bitrate
+- MP3 encoding with 192k bitrate
+- Vorbis encoding for OGG format
+
+### Image Conversions
+- Web-friendly formats (JPG, PNG, WebP)
+- Vector graphics support (SVG)
+- High-quality image processing
+
+## Browser Support
+
+This application uses FFmpeg.wasm, which requires a modern browser with WebAssembly support. The following browsers are supported:
+
+- Chrome (recommended)
+- Firefox
+- Safari
+- Edge
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [FFmpeg.wasm](https://github.com/ffmpeg/ffmpeg.js) for client-side media processing
+- [Next.js](https://nextjs.org/) for the React framework
+- [TailwindCSS](https://tailwindcss.com/) for styling
+- [Radix UI](https://www.radix-ui.com/) for accessible components
