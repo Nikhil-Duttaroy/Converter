@@ -58,9 +58,7 @@ const FileCard = ({
     >
       <CardHeader className="w-full sm:w-2/5 p-0 min-w-0">
         <div className="text-sm sm:text-base flex items-center gap-2 overflow-hidden">
-          <span className="truncate">
-            {file.name}
-          </span>
+          <span className="truncate">{file.name}</span>
           <span className="text-muted-foreground shrink-0">
             ({getBytesToSize(file.size)})
           </span>
@@ -74,7 +72,10 @@ const FileCard = ({
               Converting
             </Badge>
           ) : file.isConverted ? (
-            <Button onClick={() => downloadFile(file)} className="w-full sm:w-auto">
+            <Button
+              onClick={() => downloadFile(file)}
+              className="w-full sm:w-auto"
+            >
               <Download className="mr-2 h-4 w-4" /> Download
             </Button>
           ) : file.isErrored ? (
@@ -92,7 +93,7 @@ const FileCard = ({
               </SelectTrigger>
               <SelectContent className="h-fit">
                 {file.type.includes("image") && (
-                  <div className="grid grid-cols-2 gap-2 w-fit">
+                  <div className="grid grid-cols-3 md:grid-cols-2 gap-2 w-fit">
                     {extensions.image.map((elt, i) => (
                       <div key={i} className="col-span-1 text-center">
                         <SelectItem value={elt} className="mx-auto">
@@ -113,7 +114,7 @@ const FileCard = ({
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent value="video">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-fit">
+                      <div className="grid grid-cols-3 md:grid-cols-2 gap-2 w-fit">
                         {extensions.video.map((elt, i) => (
                           <div key={i} className="col-span-1 text-center">
                             <SelectItem value={elt} className="mx-auto">
@@ -124,7 +125,7 @@ const FileCard = ({
                       </div>
                     </TabsContent>
                     <TabsContent value="audio">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-fit">
+                      <div className="grid grid-cols-3 md:grid-cols-2 gap-2 w-fit">
                         {extensions.audio.map((elt, i) => (
                           <div key={i} className="col-span-1 text-center">
                             <SelectItem value={elt} className="mx-auto">
