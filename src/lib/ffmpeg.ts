@@ -421,6 +421,11 @@ export async function convertFiles(
           };
           results.push(fileResult);
           
+          // Ensure error state is properly set
+          file.isErrored = true;
+          file.isConverted = false;
+          file.isConverting = false;
+          
           // Emit progress update for error if callback is provided
           if (onProgress) {
             onProgress(file, fileResult.result);

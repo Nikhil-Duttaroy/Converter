@@ -71,7 +71,7 @@ const FileCard = ({
               <Loader2 className="animate-spin mr-2 h-4 w-4" />
               Converting
             </Badge>
-          ) : file.isConverted ? (
+          ) : file.isConverted && !file.isErrored ? (
             <Button
               onClick={() => downloadFile(file)}
               className="w-full sm:w-auto"
