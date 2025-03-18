@@ -230,10 +230,139 @@ function buildFFmpegCommand(
   let codecCmd: string[] = [];
 
   if (type.startsWith('video/')) {
-    const preset = format === 'webm' ? VIDEO_CODEC_PRESETS.vp8 : VIDEO_CODEC_PRESETS.h264;
-    codecCmd = buildVideoCodecCommand(format, preset);
+    // Handle specific video formats
+    switch (format.toLowerCase()) {
+      case 'mp4v':
+        codecCmd = [
+          '-c:v', 'libx264',
+          '-preset', 'fast',
+          '-crf', '28',
+          '-profile:v', 'baseline',
+          '-level', '3.0',
+          '-pix_fmt', 'yuv420p',
+          '-movflags', '+faststart',
+          '-max_muxing_queue_size', '1024'
+        ];
+        break;
+      case 'm4v':
+        codecCmd = [
+          '-c:v', 'libx264',
+          '-preset', 'medium',
+          '-crf', '23',
+          '-profile:v', 'high',
+          '-level', '4.1'
+        ];
+        break;
+      case '3gp':
+      case '3g2':
+        codecCmd = [
+          '-c:v', 'libx264',
+          '-preset', 'medium',
+          '-crf', '28',
+          '-profile:v', 'baseline',
+          '-level', '3.0',
+          '-r', '20',
+          '-s', '352x288',
+          '-pix_fmt', 'yuv420p',
+          '-maxrate', '400k'
+        ];
+        break;
+      case 'avi':
+        codecCmd = [
+          '-c:v', 'libx264',
+          '-preset', 'medium',
+          '-crf', '23',
+          '-pix_fmt', 'yuv420p'
+        ];
+        break;
+      case 'mov':
+        codecCmd = [
+          '-c:v', 'libx264',
+          '-preset', 'medium',
+          '-crf', '23',
+          '-profile:v', 'high',
+          '-level', '4.1',
+          '-pix_fmt', 'yuv420p'
+        ];
+        break;
+      case 'wmv':
+        codecCmd = [
+          '-c:v', 'wmv2',
+          '-b:v', '2M',
+          '-maxrate', '2M',
+          '-bufsize', '4M'
+        ];
+        break;
+      case 'mkv':
+        codecCmd = [
+          '-c:v', 'libx264',
+          '-preset', 'medium',
+          '-crf', '23',
+          '-pix_fmt', 'yuv420p'
+        ];
+        break;
+      case 'flv':
+        codecCmd = [
+          '-c:v', 'libx264',
+          '-preset', 'medium',
+          '-crf', '23',
+          '-pix_fmt', 'yuv420p'
+        ];
+        break;
+      case 'ogv':
+        codecCmd = [
+          '-c:v', 'libtheora',
+          '-q:v', '7'
+        ];
+        break;
+      case 'h264':
+      case '264':
+        codecCmd = [
+          '-c:v', 'libx264',
+          '-preset', 'medium',
+          '-crf', '23',
+          '-pix_fmt', 'yuv420p'
+        ];
+        break;
+      case 'hevc':
+      case '265':
+        codecCmd = [
+          '-c:v', 'libx265',
+          '-preset', 'medium',
+          '-crf', '28',
+          '-pix_fmt', 'yuv420p'
+        ];
+        break;
+      default:
+        // Default to h264 for other formats
+        const preset = format === 'webm' ? VIDEO_CODEC_PRESETS.vp8 : VIDEO_CODEC_PRESETS.h264;
+        codecCmd = buildVideoCodecCommand(format, preset);
+    }
   } else if (type.startsWith('audio/')) {
-    codecCmd = buildAudioCodecCommand(format);
+    // Handle specific audio formats
+    switch (format.toLowerCase()) {
+      case 'wma':
+        codecCmd = [
+          '-c:a', 'wmav2',
+          '-b:a', '192k'
+        ];
+        break;
+      case 'flac':
+        codecCmd = [
+          '-c:a', 'flac',
+          '-compression_level', '8'
+        ];
+        break;
+      case 'm4a':
+        codecCmd = [
+          '-c:a', 'aac',
+          '-b:a', '192k',
+          '-profile:a', 'aac_low'
+        ];
+        break;
+      default:
+        codecCmd = buildAudioCodecCommand(format);
+    }
   }
 
   return [...baseCmd, ...codecCmd, '-y', output];
