@@ -48,8 +48,20 @@ export const MIN_MEMORY = 64 * 1024 * 1024; // 64MB minimum
 export const DEFAULT_MEMORY = 512 * 1024 * 1024; // 512MB default
 
 // File format sets
-export const WEB_FRIENDLY_IMAGE_FORMATS = new Set(['jpg', 'jpeg', 'png', 'webp']);
-export const VECTOR_FORMATS = new Set(['svg', 'eps', 'ai']);
+export const WEB_FRIENDLY_IMAGE_FORMATS = new Set([
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'gif',
+  'bmp',
+  'ico',
+  'tif',
+  'tiff',
+  'raw',
+  'tga'
+]);
+export const VECTOR_FORMATS = new Set(['svg']);
 
 // FFmpeg codec presets
 export const VIDEO_CODEC_PRESETS = {

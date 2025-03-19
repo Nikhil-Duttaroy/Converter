@@ -128,6 +128,19 @@ async function convertImage(file: File, format: string): Promise<Blob> {
       canvas.height = img.height;
       if (ctx) {
         ctx.drawImage(img, 0, 0);
+        
+        if (format === 'svg') {
+          // Create SVG string
+          const svgString = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="${img.width}" height="${img.height}">
+              <image href="${canvas.toDataURL('image/png')}" width="${img.width}" height="${img.height}"/>
+            </svg>
+          `;
+          const blob = new Blob([svgString], { type: 'image/svg+xml' });
+          resolve(blob);
+          return;
+        }
+
         const mimeType = format === 'jpg' || format === 'jpeg' ? 'image/jpeg' :
                         format === 'webp' ? 'image/webp' :
                         format === 'png' ? 'image/png' : 'image/jpeg';
@@ -472,11 +485,7 @@ export async function convertFile(
 
   try {
     if (type.startsWith('image/')) {
-      if (VECTOR_FORMATS.has(to.toLowerCase())) {
-        throw new Error(`Direct conversion to ${to.toUpperCase()} is not supported yet. Please use a vector graphics editor.`);
-      }
-
-      if (WEB_FRIENDLY_IMAGE_FORMATS.has(to.toLowerCase())) {
+      if (VECTOR_FORMATS.has(to.toLowerCase()) || WEB_FRIENDLY_IMAGE_FORMATS.has(to.toLowerCase())) {
         const blob = await convertImage(fileData, to);
         const url = URL.createObjectURL(blob);
         return { url, output };
