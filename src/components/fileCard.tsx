@@ -71,6 +71,13 @@ const FileCard = ({
           <span className="text-muted-foreground shrink-0">
             ({getBytesToSize(file.size)})
           </span>
+          <Button
+            variant="outline"
+            onClick={() => setFiles(files.filter((_, i) => i !== index))}
+            className="md:hidden w-auto ml-auto px-2 py-0"
+          >
+            X
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="flex justify-start items-center w-full sm:w-2/5 gap-4 p-0">
@@ -173,7 +180,7 @@ const FileCard = ({
           )}
         </CardAction>
       </CardContent>
-      <CardFooter className="w-full sm:w-auto p-0">
+      <CardFooter className="hidden md:block w-auto p-0">
         <Button
           variant="default"
           onClick={() => setFiles(files.filter((_, i) => i !== index))}
