@@ -121,13 +121,15 @@ const FileCard = ({
               <SelectContent className="h-fit">
                 {file.type.includes("image") && (
                   <div className="grid grid-cols-3 md:grid-cols-2 gap-2 w-fit">
-                    {extensions.image.map((elt, i) => (
-                      <div key={i} className="col-span-1 text-center">
-                        <SelectItem value={elt} className="mx-auto">
-                          {elt}
-                        </SelectItem>
-                      </div>
-                    ))}
+                    {extensions.image
+                      .filter((elt) => elt !== file.from) // Exclude the current file format
+                      .map((elt, i) => (
+                        <div key={i} className="col-span-1 text-center">
+                          <SelectItem value={elt} className="mx-auto">
+                            {elt}
+                          </SelectItem>
+                        </div>
+                      ))}
                   </div>
                 )}
                 {file.type.includes("video") && (
@@ -142,24 +144,28 @@ const FileCard = ({
                     </TabsList>
                     <TabsContent value="video">
                       <div className="grid grid-cols-3 md:grid-cols-2 gap-2 w-fit">
-                        {extensions.video.map((elt, i) => (
-                          <div key={i} className="col-span-1 text-center">
-                            <SelectItem value={elt} className="mx-auto">
-                              {elt}
-                            </SelectItem>
-                          </div>
-                        ))}
+                        {extensions.video
+                          .filter((elt) => elt !== file.from) // Exclude the current file format
+                          .map((elt, i) => (
+                            <div key={i} className="col-span-1 text-center">
+                              <SelectItem value={elt} className="mx-auto">
+                                {elt}
+                              </SelectItem>
+                            </div>
+                          ))}
                       </div>
                     </TabsContent>
                     <TabsContent value="audio">
                       <div className="grid grid-cols-3 md:grid-cols-2 gap-2 w-fit">
-                        {extensions.audio.map((elt, i) => (
-                          <div key={i} className="col-span-1 text-center">
-                            <SelectItem value={elt} className="mx-auto">
-                              {elt}
-                            </SelectItem>
-                          </div>
-                        ))}
+                        {extensions.audio
+                          .filter((elt) => elt !== file.from) // Exclude the current file format
+                          .map((elt, i) => (
+                            <div key={i} className="col-span-1 text-center">
+                              <SelectItem value={elt} className="mx-auto">
+                                {elt}
+                              </SelectItem>
+                            </div>
+                          ))}
                       </div>
                     </TabsContent>
                   </Tabs>
